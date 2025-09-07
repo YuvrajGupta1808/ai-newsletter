@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - AI Newsletter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .gradient-text { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
+
+  <!-- Enhanced Navbar -->
+  <nav class="w-full px-8 py-5 flex items-center justify-between bg-white/80 backdrop-blur-lg sticky top-0 border-b border-gray-200 shadow-sm z-50">
+    <a href="/" class="font-bold text-xl gradient-text">AI Newsletter</a>
+    <div class="flex items-center gap-6">
+      <a href="/about" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium">About</a>
+      <a href="/trending" class="text-gray-600 hover:text-blue-600 font-medium transition">Trending</a>
+      <a href="/manage" class="text-gray-600 hover:text-blue-600 font-medium transition">Manage</a>
+      {% if not session.get('email') %}
+      <a href="/subscribe" class="text-gray-600 hover:text-blue-600 font-medium transition">Subscribe</a>
+      {% endif %}
+      {% if session.get('email') %}
+      <a href="/logout" class="text-gray-600 hover:text-red-600 font-medium transition">Logout</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="max-w-4xl mx-auto px-8 py-16">
+    <!-- Hero Section -->
+    <div class="text-center mb-16">
+      <h1 class="text-5xl font-bold mb-6 gradient-text">About AI Newsletter</h1>
+      <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        We're on a mission to deliver the most important news in a format that respects your time and intelligence.
+      </p>
+    </div>
+
+    <!-- Mission Section -->
+    <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-10 mb-12">
+      <h2 class="text-3xl font-bold mb-6 gradient-text">Our Mission</h2>
+      <p class="text-lg text-gray-700 leading-relaxed mb-6">
+        In an age of information overload, we believe you deserve better than clickbait and sensationalism. 
+        Our AI-powered curation system identifies the stories that truly matter across Technology, Sports, Politics, and Finance.
+      </p>
+      <p class="text-lg text-gray-700 leading-relaxed">
+        Every morning, we deliver a concise, personalized briefing that keeps you informed without overwhelming you. 
+        No ads, no fluff—just the clarity you need to stay ahead.
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid md:grid-cols-2 gap-8 mb-12">
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
+        <div class="w-12 h-12 bg-blue-600 rounded-xl mb-4 flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-3">Quality Sources</h3>
+        <p class="text-gray-600">We aggregate from trusted, established news organizations and verified sources.</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
+        <div class="w-12 h-12 bg-purple-600 rounded-xl mb-4 flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-3">Personalized</h3>
+        <p class="text-gray-600">Choose your topics and get news tailored specifically to your interests and preferences.</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-100">
+        <div class="w-12 h-12 bg-green-600 rounded-xl mb-4 flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-3">Clean Format</h3>
+        <p class="text-gray-600">Beautiful, readable emails with no ads or distractions—just the news you need.</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 border border-orange-100">
+        <div class="w-12 h-12 bg-orange-600 rounded-xl mb-4 flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 12a1 1 0 102 0V7a1 1 0 10-2 0v5zM6 12a1 1 0 102 0V9a1 1 0 10-2 0v3zM13 12a1 1 0 102 0V5a1 1 0 10-2 0v7z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-3">Always Free</h3>
+        <p class="text-gray-600">No subscriptions, no paywalls. Quality journalism should be accessible to everyone.</p>
+      </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-700 rounded-3xl p-10 text-white text-center mb-12">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <div class="text-4xl font-bold mb-2">Daily</div>
+          <div class="text-blue-100">Fresh Content</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold mb-2">4</div>
+          <div class="text-blue-100">Topic Categories</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold mb-2">100%</div>
+          <div class="text-blue-100">Free Forever</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="text-center">
+      <h2 class="text-3xl font-bold mb-6 gradient-text">Ready to Stay Informed?</h2>
+      <p class="text-gray-600 mb-8">Start getting your personalized daily briefing today.</p>
+      <a href="/subscribe" class="inline-block px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
+        Subscribe Now
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="px-8 py-12 bg-gray-900 text-white mt-16">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="mb-8">
+        <h3 class="font-bold text-xl mb-2 gradient-text">AI Newsletter</h3>
+        <p class="text-gray-400">Clarity on the news shaping the future</p>
+      </div>
+      <div class="text-gray-500 text-sm">
+        <p>🔒 We respect your privacy. No spam — just curated insights.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

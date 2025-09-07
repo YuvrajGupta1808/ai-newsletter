@@ -1,0 +1,9 @@
+flask
+gspread
+oauth2client
+requests
+flask-limiter
+redis
+python-dotenv
+email-validator
+gunicorn

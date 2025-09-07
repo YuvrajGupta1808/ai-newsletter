@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - AI Newsletter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .gradient-text { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
+
+  <!-- Enhanced Navbar -->
+  <nav class="w-full px-8 py-5 flex items-center justify-between bg-white/80 backdrop-blur-lg sticky top-0 border-b border-gray-200 shadow-sm z-50">
+    <a href="/" class="font-bold text-xl gradient-text">AI Newsletter</a>
+    <div class="flex items-center gap-6">
+      <a href="/about" class="text-gray-600 hover:text-blue-600 font-medium transition">About</a>
+      <a href="/trending" class="text-gray-600 hover:text-blue-600 font-medium transition">Trending</a>
+      <a href="/manage" class="text-gray-600 hover:text-blue-600 font-medium transition">Manage</a>
+      {% if not session.get('email') %}
+      <a href="/subscribe" class="text-gray-600 hover:text-blue-600 font-medium transition">Subscribe</a>
+      {% endif %}
+      <a href="/admin" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition font-medium">Admin</a>
+      {% if session.get('email') %}
+      <a href="/logout" class="text-gray-600 hover:text-red-600 font-medium transition">Logout</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-8 py-12">
+    <!-- Header -->
+    <div class="mb-12">
+      <h1 class="text-5xl font-bold mb-4 gradient-text">Admin Dashboard</h1>
+      <p class="text-xl text-gray-600">Newsletter subscriber analytics and management</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+            </svg>
+          </div>
+          <span class="text-2xl font-bold text-gray-800">{{ stats.total_subscribers }}</span>
+        </div>
+        <h3 class="font-semibold text-gray-700">Total Subscribers</h3>
+        <p class="text-gray-500 text-sm">All time signups</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <span class="text-2xl font-bold text-gray-800">{{ stats.verified_subscribers }}</span>
+        </div>
+        <h3 class="font-semibold text-gray-700">Verified</h3>
+        <p class="text-gray-500 text-sm">Email confirmed</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-2xl font-bold text-gray-800">{{ stats.active_subscribers }}</span>
+        </div>
+        <h3 class="font-semibold text-gray-700">Active</h3>
+        <p class="text-gray-500 text-sm">Receiving emails</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <span class="text-2xl font-bold text-gray-800">{{ stats.unverified_subscribers }}</span>
+        </div>
+        <h3 class="font-semibold text-gray-700">Unverified</h3>
+        <p class="text-gray-500 text-sm">Pending verification</p>
+      </div>
+    </div>
+
+    <!-- Topic Preferences Chart -->
+    <div class="grid lg:grid-cols-2 gap-8 mb-12">
+      <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Topic Preferences</h2>
+        <div class="space-y-4">
+          {% for topic in topics %}
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-gray-700">{{ topic }}</span>
+            <div class="flex items-center gap-3">
+              <div class="w-32 bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" 
+                     style="width: {{ (stats.topic_stats[topic] / stats.total_subscribers * 100) if stats.total_subscribers > 0 else 0 }}%"></div>
+              </div>
+              <span class="text-sm font-semibold text-gray-600 w-8">{{ stats.topic_stats[topic] }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Recent Signups -->
+      <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Recent Signups</h2>
+        <div class="space-y-4">
+          {% if stats.recent_signups %}
+            {% for signup in stats.recent_signups %}
+            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+              <div>
+                <div class="font-medium text-gray-800">{{ signup.Email }}</div>
+                <div class="text-sm text-gray-500">
+                  {% if signup.Verified == 'TRUE' %}
+                    <span class="text-green-600">✓ Verified</span>
+                  {% else %}
+                    <span class="text-yellow-600">⏳ Pending</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="text-sm text-gray-500">
+                {{ signup.Timestamp[:10] if signup.Timestamp else 'N/A' }}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-gray-500 text-center py-8">No recent signups</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+      <h2 class="text-2xl font-bold mb-6 text-gray-800">Quick Actions</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <button onclick="clearCache()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          Clear News Cache
+        </button>
+        <a href="/trending" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-center">
+          View Trending News
+        </a>
+        <button onclick="exportData()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+          Export Subscriber Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Warning -->
+    <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <span class="font-medium text-yellow-800">Admin Access Warning</span>
+      </div>
+      <p class="text-yellow-700 text-sm mt-1">This admin dashboard has no authentication. In production, add proper admin login and access controls.</p>
+    </div>
+  </div>
+
+  <script>
+    function clearCache() {
+      if (confirm('Are you sure you want to clear the news cache?')) {
+        fetch('/admin/clear-cache', {method: 'POST'})
+          .then(response => response.json())
+          .then(data => {
+            alert(data.message || 'Cache cleared successfully');
+          })
+          .catch(error => {
+            alert('Error clearing cache');
+          });
+      }
+    }
+
+    function exportData() {
+      alert('Export functionality not implemented yet. This would generate a CSV of subscriber data.');
+    }
+  </script>
+
+</body>
+</html>

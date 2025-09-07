@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subscribe - AI Newsletter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .gradient-text { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
+
+  <!-- Enhanced Navbar -->
+  <nav class="w-full px-8 py-5 flex items-center justify-between bg-white/80 backdrop-blur-lg sticky top-0 border-b border-gray-200 shadow-sm z-50">
+    <a href="/" class="font-bold text-xl gradient-text">AI Newsletter</a>
+    <div class="flex items-center gap-6">
+      <a href="/about" class="text-gray-600 hover:text-blue-600 font-medium transition">About</a>
+      <a href="/trending" class="text-gray-600 hover:text-blue-600 font-medium transition">Trending</a>
+      <a href="/manage" class="text-gray-600 hover:text-blue-600 font-medium transition">Manage</a>
+      {% if not session.get('email') %}
+      <a href="/subscribe" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium">Subscribe</a>
+      {% endif %}
+      {% if session.get('email') %}
+      <a href="/logout" class="text-gray-600 hover:text-red-600 font-medium transition">Logout</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="flex items-center justify-center min-h-[calc(100vh-80px)] px-8 py-12">
+    <div class="max-w-2xl w-full">
+      
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-8">
+            {% for category, message in messages %}
+              <div class="p-4 rounded-xl 
+                {% if category == 'success' %} bg-green-100 text-green-800 border border-green-200
+                {% elif category == 'error' %} bg-red-100 text-red-800 border border-red-200
+                {% else %} bg-yellow-100 text-yellow-800 border border-yellow-200 {% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <!-- Subscribe Card -->
+      <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold mb-4 gradient-text">Subscribe to AI Newsletter</h1>
+          <p class="text-gray-600 text-lg">Join thousands of readers getting daily insights</p>
+        </div>
+
+        <form method="POST" class="space-y-8">
+          <!-- Email Input -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+            <input type="email" name="email" placeholder="Enter your email address" required
+                   class="w-full px-4 py-4 text-lg border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+          </div>
+
+          <!-- Topic Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-4">Choose Your Topics</label>
+            <div class="grid grid-cols-2 gap-4">
+              {% for topic in topics %}
+              <label class="flex items-center p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition">
+                <input type="checkbox" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" name="topics" value="{{ topic }}">
+                <span class="ml-3 font-medium text-gray-700">{{ topic }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
+            Subscribe Now
+          </button>
+        </form>
+
+        <div class="mt-8 text-center text-sm text-gray-500">
+          <p>🔒 Your email is safe with us. Unsubscribe anytime.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
