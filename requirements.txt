@@ -7,3 +7,4 @@ redis
 python-dotenv
 email-validator
 gunicorn
+schedule

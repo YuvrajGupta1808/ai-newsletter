@@ -32,6 +32,7 @@ from sheets import (
 from news import fetch_news, build_html
 from mailer import send_email
 from cache import cached_fetch_news
+from scheduler import start_scheduler
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
@@ -331,7 +332,7 @@ def manage():
                 expires_at = (datetime.utcnow() + timedelta(minutes=10)).isoformat(timespec="seconds") + "Z"
                 set_otp(validated_email, otp_code, expires_at)
                 
-                # Send OTP email
+                # Send OTP email 
                 html = create_verification_email(otp_code, "manage")
                 send_email(validated_email, "Verify access to manage subscription", html)
                 flash("✅ Verification code sent to your email.", "success")
@@ -525,7 +526,34 @@ def admin_dashboard():
         flash(f"❌ Could not load admin dashboard: {e}", "error")
         return redirect("/")
 
+@app.route("/send-newsletters", methods=["POST"])
+def send_newsletters_manual():
+    """Manually trigger newsletter sending (for testing)"""
+    try:
+        from scheduler import send_daily_newsletters
+        
+        # Run newsletter sending in background
+        import threading
+        thread = threading.Thread(target=send_daily_newsletters, daemon=True)
+        thread.start()
+        
+        flash("✅ Newsletter sending started! Check logs for progress.", "success")
+        return redirect("/admin")
+        
+    except Exception as e:
+        logger.error(f"Manual newsletter sending error: {e}")
+        flash(f"❌ Failed to start newsletter sending: {e}", "error")
+        return redirect("/admin")
+
 if __name__ == "__main__":
     import os
+    
+    # Start the newsletter scheduler
+    try:
+        start_scheduler()
+        logger.info("🚀 Newsletter scheduler started successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to start scheduler: {e}")
+    
     port = int(os.environ.get("PORT", 5001))
     app.run(debug=True, host="0.0.0.0", port=port)

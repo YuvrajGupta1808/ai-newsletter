@@ -256,3 +256,25 @@ def deactivate_subscription(email):
         sheet.update_cell(row_idx, active_col, "FALSE")
         return True
     return False
+
+def get_all_verified_subscribers():
+    """
+    Get all verified and active subscribers
+    """
+    try:
+        headers = ensure_headers()
+        records = sheet.get_all_records(expected_headers=headers)
+        
+        verified_subscribers = []
+        for record in records:
+            # Check if subscriber is verified and active
+            if (str(record.get('Verified', '')).upper() == 'TRUE' and 
+                str(record.get('Active', 'TRUE')).upper() == 'TRUE' and
+                record.get('Email', '').strip()):
+                verified_subscribers.append(record)
+        
+        return verified_subscribers
+        
+    except Exception as e:
+        print(f"❌ Error getting verified subscribers: {e}")
+        return []
