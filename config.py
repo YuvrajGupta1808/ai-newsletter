@@ -9,6 +9,7 @@ GMAIL_USER   = os.getenv("GMAIL_USER")
 GMAIL_PASS   = os.getenv("GMAIL_PASS")   # Gmail App Password
 SHEET_ID     = os.getenv("GOOGLE_SHEET_ID")
 SERVICE_JSON = os.getenv("GOOGLE_SERVICE_JSON_PATH", "credentials.json")
+GOOGLE_SERVICE_JSON = os.getenv("GOOGLE_SERVICE_JSON")
 FLASK_SECRET = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
 

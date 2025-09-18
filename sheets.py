@@ -1,11 +1,19 @@
 import time
+import json
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from config import SERVICE_JSON, SCOPE, SHEET_ID, DESIRED_HEADERS
+from config import SERVICE_JSON, SCOPE, SHEET_ID, DESIRED_HEADERS, GOOGLE_SERVICE_JSON
 
 def open_sheet_with_retry(retries=3, backoff=2):
-    creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_JSON, SCOPE)
+    # Use environment variable if available (for Render), otherwise use file
+    if GOOGLE_SERVICE_JSON:
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(
+            json.loads(GOOGLE_SERVICE_JSON), SCOPE
+        )
+    else:
+        creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_JSON, SCOPE)
+    
     client = gspread.authorize(creds)
     last_err = None
     for i in range(retries):
