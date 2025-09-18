@@ -76,19 +76,32 @@
             <label class="block text-sm font-medium text-gray-700 mb-4">Choose your option:</label>
             
             <div class="space-y-4">
-              <label class="flex items-start p-4 border-2 border-yellow-200 bg-yellow-50 rounded-xl cursor-pointer hover:border-yellow-300 transition">
+              <label class="flex items-start p-4 border-2 border-yellow-200 bg-yellow-50 rounded-xl cursor-pointer hover:border-yellow-300 transition group">
                 <input type="radio" name="action" value="deactivate" class="mt-1 w-5 h-5 text-yellow-600 border-gray-300 focus:ring-yellow-500" checked>
                 <div class="ml-4">
-                  <div class="font-semibold text-gray-700">Pause subscription</div>
-                  <div class="text-sm text-gray-600">Keep your preferences but stop receiving emails. You can reactivate anytime.</div>
+                  <div class="font-semibold text-gray-700 flex items-center">
+                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    Pause subscription (Recommended)
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Keep your preferences but stop receiving emails. You can reactivate anytime by visiting the manage page.</div>
+                  <div class="text-xs text-yellow-700 mt-2 font-medium">✓ Reversible ✓ Keeps your data ✓ Easy to reactivate</div>
                 </div>
               </label>
 
-              <label class="flex items-start p-4 border-2 border-red-200 bg-red-50 rounded-xl cursor-pointer hover:border-red-300 transition">
+              <label class="flex items-start p-4 border-2 border-red-200 bg-red-50 rounded-xl cursor-pointer hover:border-red-300 transition group">
                 <input type="radio" name="action" value="delete" class="mt-1 w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500">
                 <div class="ml-4">
-                  <div class="font-semibold text-gray-700">Delete completely</div>
-                  <div class="text-sm text-gray-600">Remove all your data permanently. This cannot be undone.</div>
+                  <div class="font-semibold text-gray-700 flex items-center">
+                    <svg class="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"/>
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414L7.586 12l-1.293 1.293a1 1 0 101.414 1.414L9 13.414l1.293 1.293a1 1 0 001.414-1.414L10.414 12l1.293-1.293z" clip-rule="evenodd"/>
+                    </svg>
+                    Delete completely (Permanent)
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Remove all your data permanently from our system. This action cannot be undone.</div>
+                  <div class="text-xs text-red-700 mt-2 font-medium">⚠️ Irreversible ⚠️ All data lost ⚠️ Cannot be undone</div>
                 </div>
               </label>
             </div>
@@ -96,7 +109,7 @@
 
           <!-- Submit Button -->
           <div class="flex gap-4">
-            <button type="submit" class="flex-1 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
+            <button type="submit" onclick="return confirmUnsubscribe()" class="flex-1 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
               Unsubscribe
             </button>
           </div>
@@ -128,6 +141,26 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function confirmUnsubscribe() {
+      const selectedAction = document.querySelector('input[name="action"]:checked').value;
+      const email = document.querySelector('input[name="email"]').value;
+      
+      if (!email) {
+        alert('Please enter your email address first.');
+        return false;
+      }
+      
+      if (selectedAction === 'deactivate') {
+        return confirm(`Are you sure you want to pause your subscription for ${email}?\n\nThis will stop emails but keep your preferences saved. You can reactivate anytime.`);
+      } else if (selectedAction === 'delete') {
+        return confirm(`⚠️ WARNING: This will permanently delete your account for ${email}!\n\nThis action cannot be undone and all your data will be lost.\n\nAre you absolutely sure you want to proceed?`);
+      }
+      
+      return true;
+    }
+  </script>
 
 </body>
 </html>

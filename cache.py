@@ -114,30 +114,42 @@ def get_cache_key(prefix: str, *args) -> str:
     key_parts = [prefix] + [str(arg) for arg in args]
     return ":".join(key_parts)
 
-def cached_fetch_news(topic: str, max_items: int = 3, cache_ttl: int = 300):
+def cached_fetch_news_perplexity(topic: str, max_items: int = 2, cache_ttl: int = 600):
     """
-    Cached version of fetch_news
+    Cached version of fetch_news_perplexity
     """
-    from news import fetch_news
+    from news import fetch_news_perplexity
     
-    cache_key = get_cache_key("news", topic, max_items)
+    cache_key = get_cache_key("news_perplexity", topic, max_items)
     
     # Try to get from cache
     cached_data = cache.get(cache_key)
     if cached_data is not None:
         logger.info(f"Cache hit for {cache_key}")
         return cached_data
+
+def cached_fetch_news_monthly(topic: str, max_items: int = 10, cache_ttl: int = 1800):
+    """
+    Cached version of fetch_news_monthly (30 minutes cache for monthly data)
+    """
+    cache_key = get_cache_key("news_monthly", topic, max_items)
+    
+    # Try to get from cache
+    cached_data = cache.get(cache_key)
+    if cached_data is not None:
+        logger.info(f"Cache hit for monthly news: {topic}")
+        return cached_data
     
     # Cache miss - fetch fresh data
-    logger.info(f"Cache miss for {cache_key}, fetching fresh data")
+    logger.info(f"Cache miss for monthly news: {topic}, fetching fresh data")
     try:
-        fresh_data = fetch_news(topic, max_items)
-        # Cache the result
+        from news import fetch_news_monthly
+        fresh_data = fetch_news_monthly(topic, max_items)
         cache.set(cache_key, fresh_data, cache_ttl)
+        logger.info(f"Cached monthly news for {topic}: {len(fresh_data)} items")
         return fresh_data
     except Exception as e:
-        logger.error(f"Error fetching news for {topic}: {e}")
-        # Return empty list on error
+        logger.error(f"Error fetching monthly news for {topic}: {e}")
         return []
 
 def clear_news_cache():

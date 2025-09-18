@@ -231,31 +231,99 @@ def set_otp(email: str, otp_code: str, otp_expires_iso: str) -> bool:
 
 def unsubscribe_user(email):
     """Remove user from the newsletter."""
-    sheet = open_sheet_with_retry()
-    headers = ensure_headers(sheet)
-    row_idx = _find_row_by_email(sheet, headers, email)
-    
-    if row_idx:
-        sheet.delete_rows(row_idx)
-        return True
-    return False
+    try:
+        sheet = open_sheet_with_retry()
+        headers = ensure_headers(sheet)
+        row_idx = _find_row_by_email(sheet, headers, email)
+        
+        if row_idx:
+            # Log the deletion for audit purposes
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Deleting user subscription: {email} (row {row_idx})")
+            
+            sheet.delete_rows(row_idx)
+            return True
+        else:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Attempted to delete non-existent user: {email}")
+            return False
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error deleting user {email}: {e}")
+        return False
 
 def deactivate_subscription(email):
     """Mark subscription as inactive instead of deleting."""
-    sheet = open_sheet_with_retry()
-    headers = ensure_headers(sheet)
-    
-    # Add "Active" column if it doesn't exist
-    if "Active" not in headers:
-        headers.append("Active")
-        sheet.update("A1", [headers])
-    
-    row_idx = _find_row_by_email(sheet, headers, email)
-    if row_idx:
-        active_col = headers.index("Active") + 1
-        sheet.update_cell(row_idx, active_col, "FALSE")
-        return True
-    return False
+    try:
+        sheet = open_sheet_with_retry()
+        headers = ensure_headers(sheet)
+        
+        # Add "Active" column if it doesn't exist
+        if "Active" not in headers:
+            headers.append("Active")
+            sheet.update("A1", [headers])
+            # Refresh headers after adding new column
+            headers = ensure_headers(sheet)
+        
+        row_idx = _find_row_by_email(sheet, headers, email)
+        if row_idx:
+            active_col = headers.index("Active") + 1
+            sheet.update_cell(row_idx, active_col, "FALSE")
+            
+            # Log the deactivation for audit purposes
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Deactivated subscription for: {email} (row {row_idx})")
+            
+            return True
+        else:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Attempted to deactivate non-existent user: {email}")
+            return False
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error deactivating subscription for {email}: {e}")
+        return False
+
+def reactivate_subscription(email):
+    """Reactivate a deactivated subscription."""
+    try:
+        sheet = open_sheet_with_retry()
+        headers = ensure_headers(sheet)
+        
+        # Add "Active" column if it doesn't exist
+        if "Active" not in headers:
+            headers.append("Active")
+            sheet.update("A1", [headers])
+            # Refresh headers after adding new column
+            headers = ensure_headers(sheet)
+        
+        row_idx = _find_row_by_email(sheet, headers, email)
+        if row_idx:
+            active_col = headers.index("Active") + 1
+            sheet.update_cell(row_idx, active_col, "TRUE")
+            
+            # Log the reactivation for audit purposes
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Reactivated subscription for: {email} (row {row_idx})")
+            
+            return True
+        else:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Attempted to reactivate non-existent user: {email}")
+            return False
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error reactivating subscription for {email}: {e}")
+        return False
 
 def get_all_verified_subscribers():
     """

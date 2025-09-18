@@ -28,10 +28,11 @@ from sheets import (
     set_otp,
     unsubscribe_user,
     deactivate_subscription,
+    reactivate_subscription,
 )
-from news import fetch_news, build_html
+from news import fetch_news_perplexity, build_html
 from mailer import send_email
-from cache import cached_fetch_news
+from cache import cached_fetch_news_perplexity, cached_fetch_news_monthly
 from scheduler import start_scheduler
 
 app = Flask(__name__)
@@ -135,7 +136,7 @@ def create_verification_email(otp_code, purpose="subscription"):
                     <a href="#">Unsubscribe</a>
                 </div>
                 <p class="footer-text" style="margin-top: 16px; font-size: 12px; color: #94a3b8;">
-                    © 2024 AI Newsletter. All rights reserved.
+                    © 2025 AI Newsletter. All rights reserved.
                 </p>
             </div>
         </div>
@@ -149,7 +150,7 @@ def index():
     trending = {}
     try:
         for t in TOPICS:
-            trending[t] = cached_fetch_news(t, 3, cache_ttl=600)  # Cache for 10 minutes
+            trending[t] = cached_fetch_news_monthly(t, 5)  # Fetch monthly news for trending page
     except Exception as e:
         logger.error(f"Failed to fetch trending news: {e}")
         trending = {}
@@ -275,8 +276,10 @@ def verify():
                     selected.append(t)
             max_items = int(rec.get("Max_items", "3") or 3)
             if selected:
-                all_news = {t: fetch_news(t, max_items) for t in selected}
-                html = build_html(all_news)
+                all_news = {t: fetch_news_perplexity(t, max_items) for t in selected}
+                # Get the base URL from the request
+                base_url = request.url_root.rstrip('/')
+                html = build_html(all_news, base_url)
                 send_email(email, f"Your Daily Digest - {', '.join(selected)}", html)
             session["email"] = email
             flash("✅ Subscription verified!", "success")
@@ -372,6 +375,7 @@ def manage():
     email = request.args.get("email", "").strip() or session.get('email', '')
     current = {t: False for t in TOPICS}
     user_verified = False
+    user_active = True
     
     if email:
         try:
@@ -381,6 +385,8 @@ def manage():
                 if rec:
                     for t in TOPICS:
                         current[t] = str(rec.get(t, "")).upper() == "TRUE"
+                    # Check if user is active (not deactivated)
+                    user_active = str(rec.get("Active", "TRUE")).upper() == "TRUE"
         except Exception as e:
             logger.error(f"Error checking user verification status: {e}")
     
@@ -389,6 +395,7 @@ def manage():
                          current=current, 
                          email=email,
                          user_verified=user_verified,
+                         user_active=user_active,
                          is_logged_in=bool(session.get('email')))
 
 @app.route("/manage-verify", methods=["GET", "POST"])
@@ -430,7 +437,7 @@ def trending():
     data = {}
     try:
         for t in TOPICS:
-            data[t] = cached_fetch_news(t, 6, cache_ttl=300)  # Cache for 5 minutes
+            data[t] = cached_fetch_news_monthly(t, 8)  # Fetch monthly news for trending page
     except Exception as e:
         logger.error(f"Failed to fetch trending news: {e}")
         data = {}
@@ -452,36 +459,113 @@ def unsubscribe():
         email = sanitize_input(request.form.get("email", ""))
         action = request.form.get("action", "")
         
+        # Validate email
         validated_email = validate_email_address(email)
         if not validated_email:
+            log_security_event("INVALID_UNSUBSCRIBE_EMAIL", f"Email: {email}")
             flash("❌ Please enter a valid email address.", "error")
+            return redirect("/unsubscribe")
+        
+        # Validate action
+        if action not in ["deactivate", "delete"]:
+            log_security_event("INVALID_UNSUBSCRIBE_ACTION", f"Action: {action}, Email: {validated_email}")
+            flash("❌ Invalid action selected.", "error")
             return redirect("/unsubscribe")
         
         email = validated_email
         
         try:
+            # Check if user exists first
+            user_exists = is_verified(email)
+            if not user_exists:
+                flash("❌ Email not found in our system. You may not be subscribed.", "error")
+                return redirect("/unsubscribe")
+            
             if action == "deactivate":
                 success = deactivate_subscription(email)
                 if success:
-                    flash("✅ Your subscription has been deactivated. You can reactivate anytime.", "success")
+                    log_security_event("SUBSCRIPTION_DEACTIVATED", f"Email: {email}")
+                    flash("✅ Your subscription has been paused. You can reactivate anytime by visiting the manage page.", "success")
+                    return redirect("/")  # Redirect to home page
                 else:
-                    flash("❌ Email not found in our system.", "error")
+                    flash("❌ Failed to deactivate subscription. Please try again or contact support.", "error")
             elif action == "delete":
                 success = unsubscribe_user(email)
                 if success:
-                    flash("✅ You have been completely unsubscribed. All your data has been removed.", "success")
+                    log_security_event("SUBSCRIPTION_DELETED", f"Email: {email}")
+                    flash("✅ You have been completely unsubscribed. All your data has been removed from our system.", "success")
+                    return redirect("/")  # Redirect to home page
                 else:
-                    flash("❌ Email not found in our system.", "error")
-            else:
-                flash("❌ Invalid action.", "error")
+                    flash("❌ Failed to remove subscription. Please try again or contact support.", "error")
                 
         except Exception as e:
             logger.error(f"Unsubscribe error for {email}: {e}")
-            flash("❌ An error occurred. Please try again later.", "error")
+            log_security_event("UNSUBSCRIBE_ERROR", f"Email: {email}, Error: {str(e)}")
+            flash("❌ An unexpected error occurred. Please try again later or contact support.", "error")
         
         return redirect("/unsubscribe")
     
     return render_template("unsubscribe.html")
+
+@app.route("/quick-unsubscribe", methods=["POST"])
+def quick_unsubscribe():
+    """Quick unsubscribe for logged-in users"""
+    email = session.get('email')
+    if not email:
+        flash("❌ Please log in first to use quick unsubscribe.", "error")
+        return redirect("/manage")
+    
+    action = request.form.get("action", "deactivate")
+    
+    try:
+        if action == "deactivate":
+            success = deactivate_subscription(email)
+            if success:
+                log_security_event("QUICK_DEACTIVATION", f"Email: {email}")
+                flash("✅ Your subscription has been paused. You can reactivate anytime.", "success")
+                return redirect("/")  # Redirect to home page
+            else:
+                flash("❌ Failed to pause subscription. Please try again.", "error")
+        elif action == "delete":
+            success = unsubscribe_user(email)
+            if success:
+                log_security_event("QUICK_DELETION", f"Email: {email}")
+                session.clear()  # Clear session after deletion
+                flash("✅ You have been completely unsubscribed. All your data has been removed.", "success")
+                return redirect("/")
+            else:
+                flash("❌ Failed to remove subscription. Please try again.", "error")
+        else:
+            flash("❌ Invalid action.", "error")
+            
+    except Exception as e:
+        logger.error(f"Quick unsubscribe error for {email}: {e}")
+        log_security_event("QUICK_UNSUBSCRIBE_ERROR", f"Email: {email}, Error: {str(e)}")
+        flash("❌ An error occurred. Please try again later.", "error")
+    
+    return redirect("/manage")
+
+@app.route("/reactivate", methods=["POST"])
+def reactivate():
+    """Reactivate a deactivated subscription"""
+    email = session.get('email')
+    if not email:
+        flash("❌ Please log in first to reactivate your subscription.", "error")
+        return redirect("/manage")
+    
+    try:
+        success = reactivate_subscription(email)
+        if success:
+            log_security_event("SUBSCRIPTION_REACTIVATED", f"Email: {email}")
+            flash("✅ Your subscription has been reactivated! You'll start receiving emails again.", "success")
+        else:
+            flash("❌ Failed to reactivate subscription. Please try again or contact support.", "error")
+    except Exception as e:
+        logger.error(f"Reactivate error for {email}: {e}")
+        log_security_event("REACTIVATE_ERROR", f"Email: {email}, Error: {str(e)}")
+        flash("❌ An error occurred while reactivating. Please try again later.", "error")
+    
+    return redirect("/manage")
 
 @app.route("/admin")
 def admin_dashboard():

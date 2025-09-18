@@ -140,19 +140,45 @@
 
         <!-- Additional Options -->
         <div class="mt-8 pt-8 border-t border-gray-200 space-y-6">
-          <!-- Unsubscribe Option -->
-          {% if is_logged_in and user_verified %}
+          <!-- Reactivation Option for Deactivated Users -->
+          {% if is_logged_in and user_verified and not user_active %}
+          <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+            <div class="flex items-start justify-between">
+              <div>
+                <h3 class="font-semibold text-green-800 mb-2">Your subscription is paused</h3>
+                <p class="text-sm text-green-700 mb-4">You're not receiving emails right now, but your preferences are saved. You can reactivate anytime.</p>
+                <div class="flex gap-3 flex-wrap">
+                  <button onclick="confirmReactivate()" class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition">
+                    Reactivate Subscription
+                  </button>
+                  <a href="/unsubscribe" class="px-4 py-2 border border-green-300 text-green-700 text-sm font-medium rounded-lg hover:bg-green-50 transition">
+                    Unsubscribe Completely
+                  </a>
+                </div>
+              </div>
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Unsubscribe Option for Active Users -->
+          {% if is_logged_in and user_verified and user_active %}
           <div class="bg-red-50 border border-red-200 rounded-xl p-6">
             <div class="flex items-start justify-between">
               <div>
                 <h3 class="font-semibold text-red-800 mb-2">Want to unsubscribe?</h3>
                 <p class="text-sm text-red-700 mb-4">You can pause your subscription or remove your account completely.</p>
-                <div class="flex gap-3">
+                <div class="flex gap-3 flex-wrap">
                   <a href="/unsubscribe" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition">
                     Unsubscribe Options
                   </a>
                   <button onclick="confirmUnsubscribe()" class="px-4 py-2 border border-red-300 text-red-700 text-sm font-medium rounded-lg hover:bg-red-50 transition">
-                    Quick Unsubscribe
+                    Pause Subscription
+                  </button>
+                  <button onclick="confirmDelete()" class="px-4 py-2 bg-red-800 text-white text-sm font-medium rounded-lg hover:bg-red-900 transition">
+                    Delete Account
                   </button>
                 </div>
               </div>
@@ -210,18 +236,11 @@
 
   <script>
     function confirmUnsubscribe() {
-      if (confirm('Are you sure you want to unsubscribe? This will pause your subscription but keep your preferences saved.')) {
-        // Create a form to submit the unsubscribe request
+      if (confirm('Are you sure you want to pause your subscription? This will stop emails but keep your preferences saved.')) {
+        // Create a form to submit the quick unsubscribe request
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/unsubscribe';
-        
-        // Add email field
-        const emailField = document.createElement('input');
-        emailField.type = 'hidden';
-        emailField.name = 'email';
-        emailField.value = '{{ email }}';
-        form.appendChild(emailField);
+        form.action = '/quick-unsubscribe';
         
         // Add action field
         const actionField = document.createElement('input');
@@ -229,6 +248,41 @@
         actionField.name = 'action';
         actionField.value = 'deactivate';
         form.appendChild(actionField);
+        
+        // Submit the form
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+    
+    function confirmDelete() {
+      if (confirm('Are you sure you want to completely delete your account? This will remove all your data permanently and cannot be undone.')) {
+        if (confirm('This action is irreversible. Are you absolutely sure?')) {
+          // Create a form to submit the delete request
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/quick-unsubscribe';
+          
+          // Add action field
+          const actionField = document.createElement('input');
+          actionField.type = 'hidden';
+          actionField.name = 'action';
+          actionField.value = 'delete';
+          form.appendChild(actionField);
+          
+          // Submit the form
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+    }
+    
+    function confirmReactivate() {
+      if (confirm('Are you sure you want to reactivate your subscription? You\'ll start receiving emails again.')) {
+        // Create a form to submit the reactivate request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/reactivate';
         
         // Submit the form
         document.body.appendChild(form);

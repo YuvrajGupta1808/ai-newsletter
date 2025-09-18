@@ -7,9 +7,9 @@ import threading
 from datetime import datetime
 import logging
 from sheets import get_all_verified_subscribers
-from news import fetch_news, build_html
+from news import fetch_news_perplexity, build_html
 from mailer import send_email
-from config import TOPICS
+from config import TOPICS, BASE_URL
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -53,11 +53,11 @@ def send_daily_newsletters():
                 # Get max items preference
                 max_items = int(subscriber.get('Max_items', '3') or 3)
                 
-                # Fetch news for selected topics
+                # Fetch news for selected topics using Perplexity
                 all_news = {}
                 for topic in selected_topics:
                     try:
-                        news = fetch_news(topic, max_items)
+                        news = fetch_news_perplexity(topic, max_items)
                         if news:
                             all_news[topic] = news
                     except Exception as e:
@@ -69,7 +69,7 @@ def send_daily_newsletters():
                     continue
                 
                 # Build HTML newsletter
-                html_content = build_html(all_news)
+                html_content = build_html(all_news, BASE_URL)
                 
                 # Send email
                 subject = f"Your Daily Digest - {', '.join(selected_topics)}"

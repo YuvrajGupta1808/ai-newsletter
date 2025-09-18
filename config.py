@@ -3,15 +3,18 @@ import secrets
 
 # SECURITY: All sensitive data moved to environment variables
 # No fallback values for production secrets
-NEWSAPI_KEY  = os.getenv("NEWSAPI_KEY")
+PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
+NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
 GMAIL_USER   = os.getenv("GMAIL_USER")
 GMAIL_PASS   = os.getenv("GMAIL_PASS")   # Gmail App Password
 SHEET_ID     = os.getenv("GOOGLE_SHEET_ID")
 SERVICE_JSON = os.getenv("GOOGLE_SERVICE_JSON_PATH", "credentials.json")
 FLASK_SECRET = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
+BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
 
 # Validate required environment variables
 required_vars = {
+    "PERPLEXITY_API_KEY": PERPLEXITY_API_KEY,
     "NEWSAPI_KEY": NEWSAPI_KEY,
     "GMAIL_USER": GMAIL_USER, 
     "GMAIL_PASS": GMAIL_PASS,
